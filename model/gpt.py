@@ -1,6 +1,7 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from model.embeddings import GPTEmbeddings
 from model.transformer_block import TransformerBlock
@@ -16,42 +17,47 @@ class MiniGPT(nn.Module):
         embedding_dim=256,
         num_heads=4,
         num_layers=4,
-        max_sequence_length=128
+        max_sequence_length=128,
+        dropout=0.1,
     ):
-
         super().__init__()
 
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.max_sequence_length = max_sequence_length
+        self.num_layers = num_layers
 
-        # Token + positional embeddings.
         self.embeddings = GPTEmbeddings(
             vocab_size,
             embedding_dim,
-            max_sequence_length
+            max_sequence_length,
+            dropout,
         )
 
-        # Stack Transformer blocks.
         self.blocks = nn.ModuleList([
             TransformerBlock(
                 embedding_dim,
-                num_heads
+                num_heads,
+                dropout,
             )
             for _ in range(num_layers)
         ])
 
-        # Final normalization.
-        self.final_norm = LayerNorm(
-            embedding_dim
-        )
+        self.final_norm = LayerNorm(embedding_dim)
 
-        # Project hidden states to vocabulary logits.
-        self.output_head = Linear(
-            embedding_dim,
-            vocab_size,
-            bias=False
-        )
+        # No separate output projection parameter.
+        # The output layer shares the token embedding weights.
+
+        self.apply(self._initialize_weights)
+
+    @staticmethod
+    def _initialize_weights(module):
+
+        if isinstance(module, Linear):
+            nn.init.normal_(module.weight, mean=0.0, std=0.02)
+
+            if module.bias is not None:
+                nn.init.zeros_(module.bias)
 
     def forward(self, input_ids):
 
@@ -65,23 +71,23 @@ class MiniGPT(nn.Module):
                 "Sequence exceeds model context length."
             )
 
-        if input_ids.min() < 0 or input_ids.max() >= self.vocab_size:
-            raise ValueError(
-                "Input contains an invalid token ID."
-            )
+        if input_ids.numel() > 0:
+            if input_ids.min() < 0 or input_ids.max() >= self.vocab_size:
+                raise ValueError("Input contains an invalid token ID.")
 
-        # Embedding lookup.
         x = self.embeddings(input_ids)
 
-        # Transformer processing.
         for block in self.blocks:
-
             x = block(x)
 
-        # Final normalization.
         x = self.final_norm(x)
 
-        # Vocabulary predictions.
-        logits = self.output_head(x)
+        # Weight tying:
+        # [batch, sequence, embedding_dim]
+        # multiplied by [embedding_dim, vocab_size].
+        logits = F.linear(
+            x,
+            self.embeddings.token_embedding.weight,
+        )
 
         return logits

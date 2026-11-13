@@ -77,34 +77,34 @@ class PositionalEmbedding(nn.Module):
         )
 
 
-class GPTEmbeddings(nn.Module):
 
+class GPTEmbeddings(nn.Module):
     def __init__(
         self,
         vocab_size,
         embedding_dim,
-        max_sequence_length
+        max_sequence_length,
+        dropout=0.1,
     ):
-
         super().__init__()
 
         self.token_embedding = TokenEmbedding(
             vocab_size,
-            embedding_dim
+            embedding_dim,
         )
 
         self.position_embedding = PositionalEmbedding(
             max_sequence_length,
-            embedding_dim
+            embedding_dim,
         )
 
+        self.dropout = nn.Dropout(dropout)
+
     def forward(self, token_ids):
+        embeddings = (
+            self.token_embedding(token_ids)
+            + self.position_embedding(token_ids)
+        )
 
-        token_vectors = self.token_embedding(token_ids)
+        return self.dropout(embeddings)
 
-        position_vectors = self.position_embedding(token_ids)
-
-        # Combine token meaning and token position.
-        embeddings = token_vectors + position_vectors
-
-        return embeddings

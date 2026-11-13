@@ -42,6 +42,7 @@ def load_trained_model(
         num_heads=config["num_heads"],
         num_layers=config["num_layers"],
         max_sequence_length=config["max_sequence_length"],
+        dropout=config.get("dropout", 0.1),
     ).to(device)
 
     # Load learned parameters.

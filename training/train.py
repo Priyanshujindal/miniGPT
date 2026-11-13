@@ -1,3 +1,4 @@
+
 import csv
 import math
 import torch
@@ -24,6 +25,8 @@ from training.config import (
     EVAL_BATCHES,
     LOG_INTERVAL,
     DEVICE,
+    DROPOUT,
+    USE_AMP,
 )
 
 from training.dataset import create_dataloader
@@ -62,6 +65,7 @@ def calculate_loss(model, x, y, vocab_size):
     return loss
 
 
+
 @torch.no_grad()
 def estimate_loss(model, train_loader, val_loader, vocab_size):
     """Estimate average training and validation loss."""
@@ -80,11 +84,13 @@ def estimate_loss(model, train_loader, val_loader, vocab_size):
         for _ in range(EVAL_BATCHES):
             try:
                 x, y = next(iterator)
+
             except StopIteration:
                 iterator = iter(loader)
 
                 try:
                     x, y = next(iterator)
+
                 except StopIteration:
                     raise RuntimeError(
                         f"The {name} DataLoader contains no batches."
@@ -93,9 +99,16 @@ def estimate_loss(model, train_loader, val_loader, vocab_size):
             x = x.to(DEVICE, non_blocking=True)
             y = y.to(DEVICE, non_blocking=True)
 
-            loss = calculate_loss(model, x, y, vocab_size)
+            loss = calculate_loss(
+                model,
+                x,
+                y,
+                vocab_size,
+            )
+
             losses.append(loss.item())
 
+        # Store the average loss for this dataset.
         results[name] = sum(losses) / len(losses)
 
     model.train()
@@ -103,53 +116,81 @@ def estimate_loss(model, train_loader, val_loader, vocab_size):
     return results
 
 
+
 def save_checkpoint(
     model,
     optimizer,
+    scaler,
     step,
     val_loss,
     vocab_size,
     filename,
 ):
-    """Save model and optimizer state."""
+    """Save model, optimizer, scaler and configuration."""
 
     checkpoint = {
         "step": step,
+
         "model_state_dict": model.state_dict(),
+
         "optimizer_state_dict": optimizer.state_dict(),
+
+        "scaler_state_dict": scaler.state_dict(),
+
         "val_loss": val_loss,
+
         "vocab_size": vocab_size,
+
         "model_config": {
             "embedding_dim": EMBEDDING_DIM,
             "num_heads": NUM_HEADS,
             "num_layers": NUM_LAYERS,
             "max_sequence_length": BLOCK_SIZE,
+            "dropout": DROPOUT,
         },
     }
 
-    torch.save(checkpoint, CHECKPOINT_DIR / filename)
+    torch.save(
+        checkpoint,
+        CHECKPOINT_DIR / filename,
+    )
 
 
 def main():
-    CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+    CHECKPOINT_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    LOG_DIR.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     print("=" * 60)
-    print("MiniGPT Training")
+    print("MiniGPT Improved Training")
     print("=" * 60)
 
+    # --------------------------------------------------
     # 1. Load tokenizer
+    # --------------------------------------------------
+
     print("\nLoading tokenizer...")
 
-    tokenizer = BPETokenizer.load(str(TOKENIZER_PATH))
+    tokenizer = BPETokenizer.load(
+        str(TOKENIZER_PATH)
+    )
 
-    # EOS token is an additional token beyond the BPE vocabulary.
     vocab_size = tokenizer.vocab_size + 1
 
     print(f"Tokenizer vocabulary: {tokenizer.vocab_size}")
     print(f"Model vocabulary: {vocab_size}")
 
+    # --------------------------------------------------
     # 2. Load datasets
+    # --------------------------------------------------
+
     print("\nLoading datasets...")
 
     train_loader = create_dataloader(
@@ -167,16 +208,23 @@ def main():
     )
 
     if len(train_loader) == 0:
-        raise RuntimeError("Training DataLoader is empty.")
+        raise RuntimeError(
+            "Training DataLoader is empty."
+        )
 
     if len(val_loader) == 0:
-        raise RuntimeError("Validation DataLoader is empty.")
+        raise RuntimeError(
+            "Validation DataLoader is empty."
+        )
 
     print(f"Training batches: {len(train_loader)}")
     print(f"Validation batches: {len(val_loader)}")
 
-    # 3. Create model
-    print("\nCreating MiniGPT...")
+    # --------------------------------------------------
+    # 3. Create improved model
+    # --------------------------------------------------
+
+    print("\nCreating improved MiniGPT...")
 
     model = MiniGPT(
         vocab_size=vocab_size,
@@ -184,6 +232,7 @@ def main():
         num_heads=NUM_HEADS,
         num_layers=NUM_LAYERS,
         max_sequence_length=BLOCK_SIZE,
+        dropout=DROPOUT,
     ).to(DEVICE)
 
     total_parameters = sum(
@@ -193,19 +242,41 @@ def main():
 
     print(f"Parameters: {total_parameters:,}")
     print(f"Device: {DEVICE}")
+    print(f"Dropout: {DROPOUT}")
 
+    # --------------------------------------------------
     # 4. Create optimizer
+    # --------------------------------------------------
+
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=LEARNING_RATE,
         weight_decay=WEIGHT_DECAY,
     )
 
-    # 5. Prepare logging
+    # --------------------------------------------------
+    # 5. Configure mixed precision
+    # --------------------------------------------------
+
+    amp_enabled = USE_AMP and DEVICE.type == "cuda"
+
+    scaler = torch.amp.GradScaler(
+        "cuda",
+        enabled=amp_enabled,
+    )
+
+    print(f"Mixed precision enabled: {amp_enabled}")
+
+    # --------------------------------------------------
+    # 6. Prepare logging
+    # --------------------------------------------------
+
     log_path = LOG_DIR / "training_log.csv"
 
     with open(log_path, "w", newline="") as file:
+
         writer = csv.writer(file)
+
         writer.writerow([
             "step",
             "train_loss",
@@ -214,13 +285,17 @@ def main():
         ])
 
     best_val_loss = float("inf")
+
     train_iterator = iter(train_loader)
 
     model.train()
 
     print("\nStarting training...\n")
 
-    # 6. Training loop
+    # --------------------------------------------------
+    # 7. Training loop
+    # --------------------------------------------------
+
     for step in range(MAX_STEPS):
 
         # Update learning rate
@@ -229,47 +304,89 @@ def main():
         for param_group in optimizer.param_groups:
             param_group["lr"] = current_lr
 
-        # Get next training batch
+        # Get next batch
         try:
             x, y = next(train_iterator)
+
         except StopIteration:
             train_iterator = iter(train_loader)
             x, y = next(train_iterator)
 
-        x = x.to(DEVICE, non_blocking=True)
-        y = y.to(DEVICE, non_blocking=True)
-
-        # Forward pass
-        logits = model(x)
-
-        loss = F.cross_entropy(
-            logits.reshape(-1, vocab_size),
-            y.reshape(-1),
+        x = x.to(
+            DEVICE,
+            non_blocking=True,
         )
 
-        # Backward pass
-        optimizer.zero_grad(set_to_none=True)
-        loss.backward()
+        y = y.to(
+            DEVICE,
+            non_blocking=True,
+        )
 
-        # Prevent excessively large gradients
+        # --------------------------------------------------
+        # Forward pass with mixed precision
+        # --------------------------------------------------
+
+        with torch.autocast(
+            device_type=DEVICE.type,
+            dtype=(
+                torch.float16
+                if DEVICE.type == "cuda"
+                else torch.bfloat16
+            ),
+            enabled=amp_enabled,
+        ):
+
+            logits = model(x)
+
+            # Calculate loss in float32 for stability.
+            loss = F.cross_entropy(
+                logits.reshape(-1, vocab_size).float(),
+                y.reshape(-1),
+            )
+
+        # --------------------------------------------------
+        # Backward pass with gradient scaling
+        # --------------------------------------------------
+
+        optimizer.zero_grad(
+            set_to_none=True
+        )
+
+        scaler.scale(loss).backward()
+
+        # Unscale gradients before clipping.
+        scaler.unscale_(optimizer)
+
         torch.nn.utils.clip_grad_norm_(
             model.parameters(),
             GRAD_CLIP,
         )
 
-        # Update model parameters
-        optimizer.step()
+        # Optimizer update
+        scaler.step(optimizer)
 
-        # Print training progress
+        scaler.update()
+
+        # --------------------------------------------------
+        # Training progress
+        # --------------------------------------------------
+
         if step % LOG_INTERVAL == 0:
+
             print(
                 f"Step {step:5d}/{MAX_STEPS} | "
                 f"Loss: {loss.item():.4f} | "
                 f"LR: {current_lr:.7f}"
             )
 
-        # 7. Evaluate model
-        if step % EVAL_INTERVAL == 0 or step == MAX_STEPS - 1:
+        # --------------------------------------------------
+        # Evaluation
+        # --------------------------------------------------
+
+        if (
+            step % EVAL_INTERVAL == 0
+            or step == MAX_STEPS - 1
+        ):
 
             losses = estimate_loss(
                 model,
@@ -282,18 +399,33 @@ def main():
             val_loss = losses["val"]
 
             print("\n" + "-" * 60)
+
             print(f"Evaluation at step {step}")
+
             print(f"Training loss:   {train_loss:.4f}")
+
             print(f"Validation loss: {val_loss:.4f}")
 
             if val_loss < 20:
-                print(f"Validation perplexity: {math.exp(val_loss):.2f}")
+                print(
+                    f"Validation perplexity: "
+                    f"{math.exp(val_loss):.2f}"
+                )
 
             print("-" * 60 + "\n")
 
+            # --------------------------------------------------
             # Save CSV log
-            with open(log_path, "a", newline="") as file:
+            # --------------------------------------------------
+
+            with open(
+                log_path,
+                "a",
+                newline="",
+            ) as file:
+
                 writer = csv.writer(file)
+
                 writer.writerow([
                     step,
                     train_loss,
@@ -301,23 +433,32 @@ def main():
                     current_lr,
                 ])
 
+            # --------------------------------------------------
             # Save latest checkpoint
+            # --------------------------------------------------
+
             save_checkpoint(
                 model,
                 optimizer,
+                scaler,
                 step,
                 val_loss,
                 vocab_size,
                 "latest.pt",
             )
 
+            # --------------------------------------------------
             # Save best checkpoint
+            # --------------------------------------------------
+
             if val_loss < best_val_loss:
+
                 best_val_loss = val_loss
 
                 save_checkpoint(
                     model,
                     optimizer,
+                    scaler,
                     step,
                     val_loss,
                     vocab_size,
@@ -328,11 +469,21 @@ def main():
 
             print()
 
+    # --------------------------------------------------
+    # 8. Training completed
+    # --------------------------------------------------
+
     print("=" * 60)
     print("Training completed.")
-    print(f"Best validation loss: {best_val_loss:.4f}")
+
+    print(
+        f"Best validation loss: {best_val_loss:.4f}"
+    )
+
     print(f"Checkpoints: {CHECKPOINT_DIR}")
+
     print(f"Training log: {log_path}")
+
     print("=" * 60)
 
 

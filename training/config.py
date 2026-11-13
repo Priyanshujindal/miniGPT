@@ -30,6 +30,16 @@ EVAL_INTERVAL = 100
 EVAL_BATCHES = 20
 LOG_INTERVAL = 20
 
+EMBEDDING_DIM = 256
+NUM_HEADS = 4
+NUM_LAYERS = 4
+BLOCK_SIZE = 128
+DROPOUT = 0.1
+
+CHECKPOINT_DIR = PROJECT_ROOT / "checkpoints_v2"
+
+USE_AMP = True
+
 # Device
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
