@@ -27,6 +27,7 @@ class MiniGPT(nn.Module):
         self.max_sequence_length = max_sequence_length
         self.num_layers = num_layers
 
+        # Token and positional embeddings.
         self.embeddings = GPTEmbeddings(
             vocab_size,
             embedding_dim,
@@ -34,6 +35,7 @@ class MiniGPT(nn.Module):
             dropout,
         )
 
+        # Transformer blocks.
         self.blocks = nn.ModuleList([
             TransformerBlock(
                 embedding_dim,
@@ -43,18 +45,22 @@ class MiniGPT(nn.Module):
             for _ in range(num_layers)
         ])
 
+        # Final normalization.
         self.final_norm = LayerNorm(embedding_dim)
 
-        # No separate output projection parameter.
-        # The output layer shares the token embedding weights.
-
+        # Output projection shares token embedding weights.
         self.apply(self._initialize_weights)
 
     @staticmethod
     def _initialize_weights(module):
 
         if isinstance(module, Linear):
-            nn.init.normal_(module.weight, mean=0.0, std=0.02)
+
+            nn.init.normal_(
+                module.weight,
+                mean=0.0,
+                std=0.02,
+            )
 
             if module.bias is not None:
                 nn.init.zeros_(module.bias)
@@ -72,19 +78,27 @@ class MiniGPT(nn.Module):
             )
 
         if input_ids.numel() > 0:
-            if input_ids.min() < 0 or input_ids.max() >= self.vocab_size:
-                raise ValueError("Input contains an invalid token ID.")
 
+            if (
+                input_ids.min() < 0
+                or input_ids.max() >= self.vocab_size
+            ):
+                raise ValueError(
+                    "Input contains an invalid token ID."
+                )
+
+        # Embedding layer.
         x = self.embeddings(input_ids)
 
+        # Transformer layers.
         for block in self.blocks:
             x = block(x)
 
+        # Final normalization.
         x = self.final_norm(x)
 
         # Weight tying:
-        # [batch, sequence, embedding_dim]
-        # multiplied by [embedding_dim, vocab_size].
+        # Reuse token embedding weights as output projection.
         logits = F.linear(
             x,
             self.embeddings.token_embedding.weight,

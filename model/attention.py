@@ -1,15 +1,7 @@
 
-import math
 import torch
 import torch.nn as nn
-
-from model.layers import Linear
-
-
-
-import math
-import torch
-import torch.nn as nn
+import torch.nn.functional as F
 
 from model.layers import Linear
 
@@ -43,31 +35,17 @@ class CausalSelfAttention(nn.Module):
             embedding_dim,
         )
 
-        self.attention_dropout = nn.Dropout(dropout)
-        self.residual_dropout = nn.Dropout(dropout)
+        # SDPA applies attention dropout internally.
+        self.attention_dropout = dropout
 
-        # Causal mask is registered as a buffer.
-        self.register_buffer(
-            "causal_mask",
-            torch.tril(
-                torch.ones(
-                    1,
-                    1,
-                    1024,
-                    1024,
-                    dtype=torch.bool,
-                )
-            ),
-            persistent=False,
-        )
+        # Dropout after the attention output projection.
+        self.residual_dropout = nn.Dropout(dropout)
 
     def forward(self, x):
 
         batch_size, sequence_length, channels = x.shape
 
-        if sequence_length > self.causal_mask.size(-1):
-            raise ValueError("Sequence length exceeds attention mask.")
-
+        # Project input into query, key and value.
         qkv = self.qkv(x)
 
         qkv = qkv.view(
@@ -78,36 +56,27 @@ class CausalSelfAttention(nn.Module):
             self.head_dim,
         )
 
+        # Shape: [3, batch, heads, sequence, head_dim]
         qkv = qkv.permute(2, 0, 3, 1, 4)
 
         query, key, value = qkv.unbind(dim=0)
 
-        scores = query @ key.transpose(-2, -1)
-
-        scores = scores / math.sqrt(self.head_dim)
-
-        mask = self.causal_mask[
-            :, :,
-            :sequence_length,
-            :sequence_length,
-        ]
-
-        scores = scores.masked_fill(
-            ~mask,
-            float("-inf"),
+        # Optimized scaled dot-product attention.
+        # PyTorch automatically applies causal masking.
+        output = F.scaled_dot_product_attention(
+            query,
+            key,
+            value,
+            dropout_p=(
+                self.attention_dropout
+                if self.training
+                else 0.0
+            ),
+            is_causal=True,
         )
 
-        attention_weights = torch.softmax(
-            scores,
-            dim=-1,
-        )
-
-        attention_weights = self.attention_dropout(
-            attention_weights
-        )
-
-        output = attention_weights @ value
-
+        # [batch, heads, sequence, head_dim]
+        # -> [batch, sequence, embedding_dim]
         output = output.transpose(1, 2).contiguous()
 
         output = output.view(
