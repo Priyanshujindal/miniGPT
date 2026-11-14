@@ -1,0 +1,32 @@
+{
+    "version": "v3",
+    "tokenizer": "data/tokenizer/bpe_tokenizer_v3.json",
+    "vocab_size": 2048,
+    "eos_token_id": 2048,
+    "model_vocab_size": 2049,
+    "dtype": "uint16",
+    "training": {
+        "stories": 20000,
+        "characters": 17221976,
+        "utf8_bytes": 17238617,
+        "tokens_without_eos": 4761163,
+        "eos_tokens": 20000,
+        "total_tokens": 4781163,
+        "characters_per_token": 3.6171784078805955,
+        "bytes_per_token": 3.620673562320803,
+        "dtype": "uint16",
+        "maximum_token_id": 2048
+    },
+    "validation": {
+        "stories": 2000,
+        "characters": 1591096,
+        "utf8_bytes": 1592085,
+        "tokens_without_eos": 433315,
+        "eos_tokens": 2000,
+        "total_tokens": 435315,
+        "characters_per_token": 3.6719153502648187,
+        "bytes_per_token": 3.6741977545203834,
+        "dtype": "uint16",
+        "maximum_token_id": 2048
+    }
+}

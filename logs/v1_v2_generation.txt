@@ -1,0 +1,73 @@
+MINIGPT V1 vs V2 GENERATION COMPARISON
+================================================================================
+
+PROMPT 1: Once upon a time
+--------------------------------------------------------------------------------
+
+V1:
+ver drove through the sunshine and walked around the forest every day!
+Generated tokens: 28
+
+V2:
+, there was a boy named Timmy. He loved to play outside in the sun and look for fun things inside it. One day, he saw a big box with lots of treasures inside. He picked it up and went inside to find something yummy!
+
+He opened it and found an old box. Inside was a box that he had an idea. It was a special toy box and he tried to open it, but it was too high.
+
+Timmy's mom saw him and
+Generated tokens: 100
+
+PROMPT 2: The little girl went to the garden.
+--------------------------------------------------------------------------------
+
+V1:
+
+Generated tokens: 0
+
+V2:
+ There she saw a big, scary shark on her head. The little girl was very scared. She said she would never give up.
+
+So she looked around and noticed some people in the puddle. So the mother gave them lots of water.
+
+The little girl was happy! She jumped out of the pond and ran off to get some water. Then she ran into the garden with all the kids. They all had a wonderful time together and had lots of fun.
+Generated tokens: 100
+
+PROMPT 3: A small boy found a mysterious box.
+--------------------------------------------------------------------------------
+
+V1:
+
+Generated tokens: 0
+
+V2:
+ He looked all around and saw a big, green panic! 
+
+The boy asked the old man what was doing in the room and he said: "That's very special. I have many things to do." The little boy smiled and said: â€œThis is a rare toy! Would you like it too?"
+
+So the old man went over to the store and tried his best. But when he got there, something bad happened. It was not so sc
+Generated tokens: 100
+
+PROMPT 4: A dog and a cat became friends.
+--------------------------------------------------------------------------------
+
+V1:
+
+Generated tokens: 0
+
+V2:
+ They played together in the park, having fun together.
+Generated tokens: 11
+
+PROMPT 5: One day, a young boy decided to help his mother.
+--------------------------------------------------------------------------------
+
+V1:
+
+Generated tokens: 0
+
+V2:
+ The little boy was very excited and asked the little boy if he wanted some money. He said yes!
+ 
+The little boy was so excited! He picked up all of his old things and showed them how to use the money from the store. The little boy was so happy that he gave the coin home. 
+
+The little boy thanked his mommy for the idea and ran off with him. She went back to his house and played with the toy car every day.
+Generated tokens: 96

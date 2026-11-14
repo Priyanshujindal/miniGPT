@@ -1,0 +1,280 @@
+MINIGPT CHECKPOINT GENERATION COMPARISON
+Random seed: 42
+Maximum new tokens: 80
+
+###########################################################################
+CHECKPOINT: best.pt
+###########################################################################
+
+---------------------------------------------------------------------------
+PROMPT: Once upon a time
+---------------------------------------------------------------------------
+
+[Greedy]
+ar old girl named Lily. She loved to play outside in the park. One day, she went to the park with her mommy and daddy. Lily saw a big butterfly in the sky. It was very cold and wanted to play with it.
+
+Lily asked her mom, "What is 
+
+
+[Low Randomness]
+ver decided to go for a walk in the park. One day, she went to the park with her mommy to play with her friends. She saw a big butterfly on the ground. She wanted to help it, but it was too heavy.
+
+She took her butterfly to it and as
+
+
+[Balanced]
+ver drove through the sunshine and walked around happily.
+
+One day, Crizie was crumbling, so she stopped walking in the dark. She found an ancient tree with a princess in her skill. Her m
+
+
+[High Randomness]
+ver drovers that was a tired and a golden cape that explain each other!
+
+
+---------------------------------------------------------------------------
+PROMPT: A little boy went to the forest
+---------------------------------------------------------------------------
+
+[Greedy]
+. He saw a big tree with his friends. He wanted to play with it, but he was too late.
+
+The little boy was very sad. He wanted to play with his friends. He asked his friends if he could play with him to play with him too. He said he could play with him too. He said he could not play 
+
+
+[Low Randomness]
+, but he was very sad. He was sad and cried away.
+
+The boy looked at the most bird. He saw a big bird in the grass and put it on the ground. He was so happy and couldn't wait to see what was inside. He could
+
+
+[Balanced]
+, but it was too late for him.
+
+Then he heard someone coming from the sky and the box. It was funny. He tried he saw a man on the ground. It was a small boy who wanted to see what it was. 
+
+He soon could
+
+
+[High Randomness]
+, but it was too late for him. She reached in a truck and said it was very silent. She said, "Don't worry, Jenny, we can steal it up! You must more bukets. We just denover could
+
+
+---------------------------------------------------------------------------
+PROMPT: The dog was playing in the garden
+---------------------------------------------------------------------------
+
+[Greedy]
+. He had a big bucket of fun playing with his friends, and he was very happy.
+
+The dog was very happy to have a new friend, and they all played together every day. They played together all day long, and had lots of fun together
+
+
+[Low Randomness]
+, but it was too late. The dog was hurt and couldn't wait to get the dog. He ran to his mom and said, "Yes, I will find you." 
+
+The dog looked at him and said, "That's a princess for you, Tim! I love 
+
+
+[Balanced]
+. They saw the dog and ran to the door. Suddenly, the dog had a long time. The dog couldn't find it.
+
+John saw a big stign, feeling colourful for his friends. He wanted to play with it, but he did not come b
+
+
+[High Randomness]
+. They saw the dog running around.
+
+"Helly, can happen?" Lily said the dog sible.
+
+"Let's find moves!" Lily said. "Me if it is magic, but I try to play with something else now." Ben said, smil
+
+
+---------------------------------------------------------------------------
+PROMPT: One day, a beautiful bird
+---------------------------------------------------------------------------
+
+[Greedy]
+s came very curious. He wanted to play with it, but he was too late.
+
+The bird was very sad. He wanted to help him but he couldn't wait to get the bird from the bird. He asked the bird if he could help him 
+
+
+[Low Randomness]
+. The bird was very happy. Then, the bird flew away and the bird started to cry.
+
+The bird took the bird and put it into the birds of the birds and the birds. It was so happy that they had made a new friend.
+
+
+[Balanced]
+. The bird liked the bird took it home and waved goodbye. Suddenly, the bird was finally scared.
+
+The bird was stepping on the floor and couldn't see what the bird's best friend had li
+
+
+[High Randomness]
+ur. Suddenly, the boat came by and sheried a stranger lit up and the box. It was fun!
+
+John saw a man white his footche. â€œI want to expension. Iâ
+
+
+---------------------------------------------------------------------------
+PROMPT: A farmer lived in a small village
+---------------------------------------------------------------------------
+
+[Greedy]
+. As she walked around the park, she saw a big tree with lots of fun things in the sky. She wanted to try it, but it was too late.
+
+Suddenly, a little girl came to visit the tree. She was very excit
+
+
+[Low Randomness]
+st in the garden. Every day she would go on an adventure, and her mom would come back to her room and play together every day.
+
+
+[Balanced]
+. They decided to play in the park with their walls, and had a lot of fun!
+
+
+[High Randomness]
+. They drove their job and looked up and saw a shery trie.
+
+At the tries, the train, farmer stopped walking; it was too magic, but the tribbittle stopped. The bear went onto the boy 
+
+
+###########################################################################
+CHECKPOINT: latest.pt
+###########################################################################
+
+---------------------------------------------------------------------------
+PROMPT: Once upon a time
+---------------------------------------------------------------------------
+
+[Greedy]
+ar old man and he was very happy. He had a great time to go home and explore the world around him. One day, he decided to go to the park. He put the park and put it in his hands.
+
+He was so excited! He ran over to his 
+
+
+[Low Randomness]
+ver decided to go for a walk in the park. One day, she went to the park with her mommy to get a big cup of cupboard. She saw a fish on the ground, and it was very hungry. It was so cold that she had been a big cupboar
+
+
+[Balanced]
+ver drove through the sky. It was hard and it could buy some milkets that the mill flew over and wonderful for them.
+
+
+[High Randomness]
+ver drovers that was a tree too. She was hugged and went back to the steadow, sible. She said, "Don't worry, Jenny, we're earning!" The stect had try to work, smiles, she nodded and went on. Her m
+
+
+---------------------------------------------------------------------------
+PROMPT: A little boy went to the forest
+---------------------------------------------------------------------------
+
+[Greedy]
+. He saw a big tree with lots of fun things that he had been fast.
+
+The little boy was very happy to have a new friend. He thanked the tree for his friends for helping him for helping him find the tree. He thanked the tree for his friend
+
+
+[Low Randomness]
+, but he couldn't find it. He was very sad and angry.
+
+The little boy was sad. He knew he had to go to the old man again and he was very happy to have a new friend. He had a lot of fun day and he knew that it was import
+
+
+[Balanced]
+, but it was too late to take a hug. But he couldn't believe and cry.
+
+His mom took the band put him out for Sue. She saw some more and had lots of fun playing with Sue. She ran to come b
+
+
+[High Randomness]
+, but it was too late to hear the house before happening.
+
+The next morning, the child took the store and the child arrived. She left and went close to the house, playing and jumping over the tank 
+
+
+---------------------------------------------------------------------------
+PROMPT: The dog was playing in the garden
+---------------------------------------------------------------------------
+
+[Greedy]
+, but he couldn't wait to get the dog.
+
+The dog was sad and didn't know what to do. He was sad. He wanted to see what was wrong. He said he was too hard. He said he was sorry for him. He said he was sorry for him
+
+
+[Low Randomness]
+, but it was too late. The dog was hurt and cried.
+
+Suddenly, the dog stopped back into the room. It was very excited and started to cry! The dog was scared and quickly ran away from until he found a 
+
+
+[Balanced]
+, but it stopped closer and loudly, the truck said, "Crise on! I must be careful when I make this fun!"
+
+Anna smiled and said, "Okay, I am sorry. I will be safe. You have to li
+
+
+[High Randomness]
+. They saw the dog running around.
+
+"Hello little one," Emily said, sicking. Emily liked the door. Emily was so emning, she said goodbye and hugged her and left.
+
+But thenon the boy 
+
+
+---------------------------------------------------------------------------
+PROMPT: One day, a beautiful bird
+---------------------------------------------------------------------------
+
+[Greedy]
+s came very closer and came to a new bird. The bird was very happy and thanked the bird for helping him for help.
+
+The bird was very happy to have a new bird and the bird was very happy. They all had a lot of fun day 
+
+
+[Low Randomness]
+s came to visit the bird and started to cry. Then, he saw a big tree and ran outside.
+
+The bird flew away, but the bird was too late. The bird was very sad and scared. He wanted to tell him to get the 
+
+
+[Balanced]
+cage came to visit the tree. But one day, a happy bird said it was very silly mouth. It was funny! Every day, he found a star of his foot colourful bird perched his name with a big clothe. 
+
+
+
+
+[High Randomness]
+cage named Tim. Timmy was a longer bird box and looked at it tail. He felt much beautiful! Everyone named Anna asked him and they were the person to practice it.
+
+As they could
+
+
+---------------------------------------------------------------------------
+PROMPT: A farmer lived in a small village
+---------------------------------------------------------------------------
+
+[Greedy]
+. As they walked around the park, they saw a big tree with lots of fun things in the sky. It was the best skull and it was very pretty.
+
+The tree was very happy and thanked the tree for helping the tree for help
+
+
+[Low Randomness]
+st in the garden. Everyone was happy to have a new friend.
+
+
+[Balanced]
+st in the garden, when she looked up and saw a shiny tree.
+
+The next day, Lily and the girl went on her room and saw what was they were doing. She said, "Don't worrying to pick it. I know, blew me soap you 
+
+
+[High Randomness]
+! He was so happy. He had lost his lhouse for go. Then, he said it was very silly much. It was fun!
+
+John saw a man who was excited. He couldn't see what it wasn't been. He went onto the lli

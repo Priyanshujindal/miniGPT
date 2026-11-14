@@ -1,0 +1,55 @@
+MINIGPT V1 vs V2 FINAL BENCHMARK REPORT
+================================================================================
+
+Validation stories: 2000
+Raw validation bytes: 1593898
+
+
+V1 RESULTS
+------------------------------------------------------------
+model: V1
+checkpoint_step: 19900
+parameters: 3323648
+tokenizer_vocab_size: 512
+validation_loss: 1.8321175898843898
+perplexity: 6.24710146068079
+bits_per_byte: 1.1135394650328612
+validation_tokens: 671488
+validation_bytes: 1593898
+evaluation_seconds: 4.045141099952161
+evaluation_tokens_per_second: 165998.65948012078
+peak_gpu_memory_mb: 31.6943359375
+checkpoint_size_mb: 38.09279155731201
+tokenizer_size_mb: 0.009234428405761719
+generation_seconds: 0.24361160001717508
+generation_tokens_per_second: 114.93705553440783
+
+V2 RESULTS
+------------------------------------------------------------
+model: V2
+checkpoint_step: 19500
+parameters: 3716864
+tokenizer_vocab_size: 2048
+validation_loss: 2.2741549356836472
+perplexity: 9.719701767869152
+bits_per_byte: 0.9024114728858829
+validation_tokens: 438400
+validation_bytes: 1593898
+evaluation_seconds: 2.3853481999831274
+evaluation_tokens_per_second: 183788.68125127433
+peak_gpu_memory_mb: 33.1943359375
+checkpoint_size_mb: 42.59279155731201
+tokenizer_size_mb: 0.1177072525024414
+generation_seconds: 2.1859877000097185
+generation_tokens_per_second: 186.1858600568478
+
+
+CROSS-MODEL COMPARISON
+================================================================================
+V1 BPB: 1.113539
+V2 BPB: 0.902411
+V2 has better validation BPB.
+
+BPB measures negative log likelihood in bits per raw byte. Lower is better.
+
+Generation results must also be reviewed qualitatively. A numerical score does not establish story quality.

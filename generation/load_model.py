@@ -5,7 +5,7 @@ from tokenizer.bpe import BPETokenizer
 
 
 def load_trained_model(
-    checkpoint_path="checkpoints/best.pt",
+    checkpoint_path="checkpoints_v2/best.pt",
     tokenizer_path="data/tokenizer/bpe_tokenizer.json",
     device=None,
 ):
@@ -17,12 +17,17 @@ def load_trained_model(
     # Load tokenizer
     tokenizer = BPETokenizer.load(tokenizer_path)
 
+    print(f"Loading checkpoint from: {checkpoint_path}")
+
     # Load checkpoint
     checkpoint = torch.load(
         checkpoint_path,
         map_location=device,
         weights_only=True,
     )
+
+    print(f"Checkpoint training step: {checkpoint.get('step', 'Unknown')}")
+    print(f"Checkpoint validation loss: {checkpoint.get('val_loss', 'Unknown')}")
 
     config = checkpoint["model_config"]
 

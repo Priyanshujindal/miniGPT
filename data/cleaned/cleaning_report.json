@@ -1,0 +1,112 @@
+{
+    "train": {
+        "stories": 20000,
+        "stories_changed": 1456,
+        "total_replacements": 8314,
+        "replacement_counts": {
+            "â€™": 2160,
+            "â€œ": 2976,
+            "â€ [closing quote]": 2948,
+            "â€”": 55,
+            "â€“": 115,
+            "â€¦": 10,
+            "â€˜": 36,
+            "Ã©": 2,
+            "Ã±": 4,
+            "Ã¡": 1,
+            "Ã³": 1,
+            "Â¡": 1,
+            "â€‹": 2,
+            "â€ [opening quote]": 3
+        },
+        "unresolved_markers": {},
+        "unresolved_examples": {},
+        "spacing_review": {
+            "said,\"": {
+                "occurrences": 27,
+                "examples": [
+                    {
+                        "id": 1257,
+                        "matched_text": "said,\"",
+                        "context": "d Emily carefully climbed onto his back.\n\nHe said,\"Ready? Okay, hold on tight now! Here we go!\" "
+                    },
+                    {
+                        "id": 1909,
+                        "matched_text": "said,\"",
+                        "context": "hat is our country like?\" His dad smiled and said,\" Lots of people live in our country and they "
+                    },
+                    {
+                        "id": 1909,
+                        "matched_text": "said,\"",
+                        "context": "e people ignorant?\" His dad was confused and said,\" What do you mean by ignorant?\" Ben thought h"
+                    },
+                    {
+                        "id": 1909,
+                        "matched_text": "said,\"",
+                        "context": "hat other people are talking about.\" His dad said,\" Oh, you mean they don't understand? Yes, tha"
+                    },
+                    {
+                        "id": 1909,
+                        "matched_text": "said,\"",
+                        "context": " things.\"\n\nBen was happy to hear that and he said,\" I'm going to study our country and learn as "
+                    }
+                ]
+            }
+        },
+        "spelling_review": {
+            "smileing": {
+                "occurrences": 1,
+                "examples": [
+                    {
+                        "id": 2,
+                        "matched_text": "smileing",
+                        "context": "t?\"\n\n\"Oh, that's the birds,\" her Mommy said, smileing. \"They are spraying, like a fountain in the "
+                    }
+                ]
+            }
+        },
+        "output_verified": true
+    },
+    "validation": {
+        "stories": 2000,
+        "stories_changed": 114,
+        "total_replacements": 498,
+        "replacement_counts": {
+            "â€œ": 167,
+            "â€ [closing quote]": 166,
+            "â€”": 9,
+            "â€™": 130,
+            "â€“": 16,
+            "â€˜": 4,
+            "â€Š": 2,
+            "â€¦": 1,
+            "Ã©": 3
+        },
+        "unresolved_markers": {},
+        "unresolved_examples": {},
+        "spacing_review": {
+            "said,\"": {
+                "occurrences": 3,
+                "examples": [
+                    {
+                        "id": 573,
+                        "matched_text": "said,\"",
+                        "context": "til she was full and gave her a hug. Then he said,\"Come on Lucy, let's go home.\"\n\nAnd so Lucy an"
+                    },
+                    {
+                        "id": 590,
+                        "matched_text": "said,\"",
+                        "context": "soft and fun!\n\nSuddenly, Bob had an idea. He said,\"Let's tease the puppy!\" Jill thought it was a"
+                    },
+                    {
+                        "id": 1899,
+                        "matched_text": "said,\"",
+                        "context": "ted to see how strong it was.\n\nThe bear then said,\"No cutting! This igloo is a very good home fo"
+                    }
+                ]
+            }
+        },
+        "spelling_review": {},
+        "output_verified": true
+    }
+}

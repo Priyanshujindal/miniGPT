@@ -1,6 +1,9 @@
 
+import argparse
 import csv
 import math
+from pathlib import Path
+
 import torch
 import torch.nn.functional as F
 
@@ -34,23 +37,67 @@ from tokenizer.bpe import BPETokenizer
 from model.gpt import MiniGPT
 
 
-def get_learning_rate(step):
+# --------------------------------------------------
+# Command-line arguments
+# --------------------------------------------------
+
+def parse_arguments():
+
+    parser = argparse.ArgumentParser(
+        description="Train or resume MiniGPT."
+    )
+
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Resume training from the latest checkpoint.",
+    )
+
+    parser.add_argument(
+        "--checkpoint",
+        type=str,
+        default=None,
+        help="Path to a checkpoint to resume from.",
+    )
+
+    parser.add_argument(
+        "--max-steps",
+        type=int,
+        default=MAX_STEPS,
+        help="Total target training steps.",
+    )
+
+    return parser.parse_args()
+
+
+# --------------------------------------------------
+# Learning rate scheduler
+# --------------------------------------------------
+
+def get_learning_rate(step, max_steps):
     """Linear warmup followed by cosine decay."""
 
     if WARMUP_STEPS > 0 and step < WARMUP_STEPS:
+
         return LEARNING_RATE * (step + 1) / WARMUP_STEPS
 
-    decay_steps = max(1, MAX_STEPS - WARMUP_STEPS)
+    decay_steps = max(1, max_steps - WARMUP_STEPS)
 
     progress = (step - WARMUP_STEPS) / decay_steps
     progress = min(max(progress, 0.0), 1.0)
 
-    cosine_factor = 0.5 * (1.0 + math.cos(math.pi * progress))
+    cosine_factor = 0.5 * (
+        1.0 + math.cos(math.pi * progress)
+    )
 
     return MIN_LEARNING_RATE + cosine_factor * (
         LEARNING_RATE - MIN_LEARNING_RATE
     )
 
+
+# --------------------------------------------------
+# Loss calculation
+# --------------------------------------------------
 
 def calculate_loss(model, x, y, vocab_size):
     """Calculate next-token prediction cross-entropy loss."""
@@ -65,10 +112,12 @@ def calculate_loss(model, x, y, vocab_size):
     return loss
 
 
+# --------------------------------------------------
+# Loss evaluation
+# --------------------------------------------------
 
 @torch.no_grad()
 def estimate_loss(model, train_loader, val_loader, vocab_size):
-    """Estimate average training and validation loss."""
 
     model.eval()
 
@@ -78,14 +127,17 @@ def estimate_loss(model, train_loader, val_loader, vocab_size):
         ("train", train_loader),
         ("val", val_loader),
     ]:
+
         losses = []
         iterator = iter(loader)
 
         for _ in range(EVAL_BATCHES):
+
             try:
                 x, y = next(iterator)
 
             except StopIteration:
+
                 iterator = iter(loader)
 
                 try:
@@ -108,7 +160,6 @@ def estimate_loss(model, train_loader, val_loader, vocab_size):
 
             losses.append(loss.item())
 
-        # Store the average loss for this dataset.
         results[name] = sum(losses) / len(losses)
 
     model.train()
@@ -116,6 +167,47 @@ def estimate_loss(model, train_loader, val_loader, vocab_size):
     return results
 
 
+# --------------------------------------------------
+# Random-number generator states
+# --------------------------------------------------
+
+def get_rng_state():
+
+    state = {
+        "torch_rng_state": torch.get_rng_state(),
+    }
+
+    if torch.cuda.is_available():
+
+        state["cuda_rng_state"] = torch.cuda.get_rng_state_all()
+
+    return state
+
+
+def restore_rng_state(state):
+
+    if not state:
+        return
+
+    if "torch_rng_state" in state:
+
+        torch.set_rng_state(
+            state["torch_rng_state"].cpu()
+        )
+
+    if (
+        torch.cuda.is_available()
+        and "cuda_rng_state" in state
+    ):
+
+        torch.cuda.set_rng_state_all(
+            [item.cpu() for item in state["cuda_rng_state"]]
+        )
+
+
+# --------------------------------------------------
+# Checkpoint saving
+# --------------------------------------------------
 
 def save_checkpoint(
     model,
@@ -123,12 +215,13 @@ def save_checkpoint(
     scaler,
     step,
     val_loss,
+    best_val_loss,
     vocab_size,
     filename,
 ):
-    """Save model, optimizer, scaler and configuration."""
 
     checkpoint = {
+
         "step": step,
 
         "model_state_dict": model.state_dict(),
@@ -139,6 +232,8 @@ def save_checkpoint(
 
         "val_loss": val_loss,
 
+        "best_val_loss": best_val_loss,
+
         "vocab_size": vocab_size,
 
         "model_config": {
@@ -148,6 +243,8 @@ def save_checkpoint(
             "max_sequence_length": BLOCK_SIZE,
             "dropout": DROPOUT,
         },
+
+        "rng_state": get_rng_state(),
     }
 
     torch.save(
@@ -156,7 +253,122 @@ def save_checkpoint(
     )
 
 
+# --------------------------------------------------
+# Checkpoint loading
+# --------------------------------------------------
+
+def load_checkpoint(
+    checkpoint_path,
+    model,
+    optimizer,
+    scaler,
+    vocab_size,
+):
+
+    if not checkpoint_path.exists():
+
+        raise FileNotFoundError(
+            f"Checkpoint not found: {checkpoint_path}"
+        )
+
+    print(f"\nLoading checkpoint: {checkpoint_path}")
+
+    # Only load checkpoints you trust.
+    checkpoint = torch.load(
+        checkpoint_path,
+        map_location="cpu",
+        weights_only=False,
+    )
+
+    if checkpoint.get("vocab_size") != vocab_size:
+
+        raise ValueError(
+            "Checkpoint vocabulary does not match the current tokenizer."
+        )
+
+    saved_config = checkpoint.get("model_config", {})
+
+    expected_config = {
+        "embedding_dim": EMBEDDING_DIM,
+        "num_heads": NUM_HEADS,
+        "num_layers": NUM_LAYERS,
+        "max_sequence_length": BLOCK_SIZE,
+    }
+
+    for key, expected_value in expected_config.items():
+
+        saved_value = saved_config.get(key)
+
+        if (
+            saved_value is not None
+            and saved_value != expected_value
+        ):
+
+            raise ValueError(
+                f"Checkpoint model configuration mismatch: "
+                f"{key} is {saved_value}, expected {expected_value}."
+            )
+
+    # Restore model weights.
+    model.load_state_dict(
+        checkpoint["model_state_dict"]
+    )
+
+    # Restore optimizer.
+    if "optimizer_state_dict" in checkpoint:
+
+        optimizer.load_state_dict(
+            checkpoint["optimizer_state_dict"]
+        )
+
+    # Restore mixed-precision scaler.
+    scaler_state = checkpoint.get("scaler_state_dict")
+
+    if scaler_state:
+
+        scaler.load_state_dict(scaler_state)
+
+    # Restore random-number generator states.
+    restore_rng_state(
+        checkpoint.get("rng_state")
+    )
+
+    start_step = checkpoint["step"] + 1
+
+    best_val_loss = checkpoint.get(
+        "best_val_loss",
+        checkpoint.get("val_loss", float("inf")),
+    )
+
+    print("Checkpoint loaded successfully.")
+    print(f"Previous step: {checkpoint['step']}")
+    print(f"Next training step: {start_step}")
+    print(f"Best validation loss: {best_val_loss:.4f}")
+
+    return start_step, best_val_loss
+
+
+# --------------------------------------------------
+# Main training function
+# --------------------------------------------------
+
 def main():
+
+    args = parse_arguments()
+
+    max_steps = args.max_steps
+
+    if max_steps <= 0:
+
+        raise ValueError(
+            "Maximum training steps must be greater than zero."
+        )
+
+    if EVAL_BATCHES <= 0:
+
+        raise ValueError(
+            "EVAL_BATCHES must be greater than zero."
+        )
 
     CHECKPOINT_DIR.mkdir(
         parents=True,
@@ -208,11 +420,13 @@ def main():
     )
 
     if len(train_loader) == 0:
+
         raise RuntimeError(
             "Training DataLoader is empty."
         )
 
     if len(val_loader) == 0:
+
         raise RuntimeError(
             "Validation DataLoader is empty."
         )
@@ -221,7 +435,7 @@ def main():
     print(f"Validation batches: {len(val_loader)}")
 
     # --------------------------------------------------
-    # 3. Create improved model
+    # 3. Create model
     # --------------------------------------------------
 
     print("\nCreating improved MiniGPT...")
@@ -268,24 +482,72 @@ def main():
     print(f"Mixed precision enabled: {amp_enabled}")
 
     # --------------------------------------------------
-    # 6. Prepare logging
+    # 6. Resume or start fresh
+    # --------------------------------------------------
+
+    resume_requested = (
+        args.resume or args.checkpoint is not None
+    )
+
+    start_step = 0
+    best_val_loss = float("inf")
+
+    if resume_requested:
+
+        checkpoint_path = (
+            Path(args.checkpoint)
+            if args.checkpoint
+            else CHECKPOINT_DIR / "latest.pt"
+        )
+
+        start_step, best_val_loss = load_checkpoint(
+            checkpoint_path,
+            model,
+            optimizer,
+            scaler,
+            vocab_size,
+        )
+
+        if start_step >= max_steps:
+
+            raise ValueError(
+                f"Checkpoint is already at step {start_step - 1}, "
+                f"but max_steps is {max_steps}. "
+                "Increase --max-steps to continue training."
+            )
+
+    else:
+
+        print("\nStarting a new training run.")
+
+    # --------------------------------------------------
+    # 7. Prepare logging
     # --------------------------------------------------
 
     log_path = LOG_DIR / "training_log.csv"
 
-    with open(log_path, "w", newline="") as file:
+    if resume_requested and log_path.exists():
 
-        writer = csv.writer(file)
+        print("Appending to existing training log.")
 
-        writer.writerow([
-            "step",
-            "train_loss",
-            "val_loss",
-            "learning_rate",
-        ])
+    else:
 
-    best_val_loss = float("inf")
+        with open(
+            log_path,
+            "w",
+            newline="",
+        ) as file:
 
+            writer = csv.writer(file)
+
+            writer.writerow([
+                "step",
+                "train_loss",
+                "val_loss",
+                "learning_rate",
+            ])
+
+    # Create iterator after restoring RNG state.
     train_iterator = iter(train_loader)
 
     model.train()
@@ -293,22 +555,28 @@ def main():
     print("\nStarting training...\n")
 
     # --------------------------------------------------
-    # 7. Training loop
+    # 8. Training loop
     # --------------------------------------------------
 
-    for step in range(MAX_STEPS):
+    for step in range(start_step, max_steps):
 
-        # Update learning rate
-        current_lr = get_learning_rate(step)
+        # Update learning rate.
+        current_lr = get_learning_rate(
+            step,
+            max_steps,
+        )
 
         for param_group in optimizer.param_groups:
+
             param_group["lr"] = current_lr
 
-        # Get next batch
+        # Get next batch.
         try:
+
             x, y = next(train_iterator)
 
         except StopIteration:
+
             train_iterator = iter(train_loader)
             x, y = next(train_iterator)
 
@@ -338,14 +606,13 @@ def main():
 
             logits = model(x)
 
-            # Calculate loss in float32 for stability.
             loss = F.cross_entropy(
                 logits.reshape(-1, vocab_size).float(),
                 y.reshape(-1),
             )
 
         # --------------------------------------------------
-        # Backward pass with gradient scaling
+        # Backward pass
         # --------------------------------------------------
 
         optimizer.zero_grad(
@@ -354,7 +621,6 @@ def main():
 
         scaler.scale(loss).backward()
 
-        # Unscale gradients before clipping.
         scaler.unscale_(optimizer)
 
         torch.nn.utils.clip_grad_norm_(
@@ -362,9 +628,7 @@ def main():
             GRAD_CLIP,
         )
 
-        # Optimizer update
         scaler.step(optimizer)
-
         scaler.update()
 
         # --------------------------------------------------
@@ -374,7 +638,7 @@ def main():
         if step % LOG_INTERVAL == 0:
 
             print(
-                f"Step {step:5d}/{MAX_STEPS} | "
+                f"Step {step:5d}/{max_steps} | "
                 f"Loss: {loss.item():.4f} | "
                 f"LR: {current_lr:.7f}"
             )
@@ -385,7 +649,7 @@ def main():
 
         if (
             step % EVAL_INTERVAL == 0
-            or step == MAX_STEPS - 1
+            or step == max_steps - 1
         ):
 
             losses = estimate_loss(
@@ -399,14 +663,12 @@ def main():
             val_loss = losses["val"]
 
             print("\n" + "-" * 60)
-
             print(f"Evaluation at step {step}")
-
             print(f"Training loss:   {train_loss:.4f}")
-
             print(f"Validation loss: {val_loss:.4f}")
 
             if val_loss < 20:
+
                 print(
                     f"Validation perplexity: "
                     f"{math.exp(val_loss):.2f}"
@@ -434,24 +696,12 @@ def main():
                 ])
 
             # --------------------------------------------------
-            # Save latest checkpoint
+            # Update best validation loss
             # --------------------------------------------------
 
-            save_checkpoint(
-                model,
-                optimizer,
-                scaler,
-                step,
-                val_loss,
-                vocab_size,
-                "latest.pt",
-            )
+            is_best = val_loss < best_val_loss
 
-            # --------------------------------------------------
-            # Save best checkpoint
-            # --------------------------------------------------
-
-            if val_loss < best_val_loss:
+            if is_best:
 
                 best_val_loss = val_loss
 
@@ -461,16 +711,33 @@ def main():
                     scaler,
                     step,
                     val_loss,
+                    best_val_loss,
                     vocab_size,
                     "best.pt",
                 )
 
                 print("New best model saved.")
 
+            # --------------------------------------------------
+            # Save latest checkpoint
+            # --------------------------------------------------
+
+            save_checkpoint(
+                model,
+                optimizer,
+                scaler,
+                step,
+                val_loss,
+                best_val_loss,
+                vocab_size,
+                "latest.pt",
+            )
+
+            print("Latest checkpoint saved.")
             print()
 
     # --------------------------------------------------
-    # 8. Training completed
+    # 9. Training completed
     # --------------------------------------------------
 
     print("=" * 60)
@@ -481,7 +748,6 @@ def main():
     )
 
     print(f"Checkpoints: {CHECKPOINT_DIR}")
-
     print(f"Training log: {log_path}")
 
     print("=" * 60)

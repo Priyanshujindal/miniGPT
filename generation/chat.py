@@ -1,3 +1,4 @@
+
 import torch
 
 from generation.generate import generate
@@ -8,7 +9,7 @@ def main():
 
     model, tokenizer, device = load_trained_model()
 
-    # EOS token is the additional token after the BPE vocabulary.
+    # EOS is the special token immediately after the BPE vocabulary.
     eos_token_id = tokenizer.vocab_size
 
     print("\n" + "=" * 55)
@@ -31,7 +32,7 @@ def main():
             print("Please enter a prompt.")
             continue
 
-        # Encode prompt into token IDs.
+        # Encode the prompt.
         token_ids = tokenizer.encode(prompt)
 
         if not token_ids:
@@ -58,11 +59,15 @@ def main():
         # Extract only newly generated tokens.
         new_tokens = output_ids[0, len(token_ids):].tolist()
 
-        # Decode generated continuation.
+        # Remove EOS before passing tokens to the BPE tokenizer.
+        if new_tokens and new_tokens[-1] == eos_token_id:
+            new_tokens = new_tokens[:-1]
+
+        # Decode only normal BPE tokens.
         generated_text = tokenizer.decode(new_tokens)
 
         print("\nMiniGPT:")
-        print(generated_text)
+        print(generated_text if generated_text else "(No continuation generated.)")
 
 
 if __name__ == "__main__":

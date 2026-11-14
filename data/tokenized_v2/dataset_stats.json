@@ -1,0 +1,33 @@
+{
+  "tokenizer": "data\\tokenizer\\bpe_tokenizer_v2.json",
+  "tokenizer_vocab_size": 2048,
+  "eos_token_id": 2048,
+  "model_vocab_size": 2049,
+  "training_duration_seconds": 5.99,
+  "train": {
+    "split": "train",
+    "stories": 20000,
+    "characters": 17235647,
+    "tokens_without_eos": 4799638,
+    "eos_tokens": 20000,
+    "total_tokens": 4819638,
+    "characters_per_token": 3.591,
+    "dtype": "uint16",
+    "minimum_token_id": 0,
+    "maximum_token_id": 2048,
+    "output_file": "data\\tokenized_v2\\train.npy"
+  },
+  "validation": {
+    "split": "validation",
+    "stories": 2000,
+    "characters": 1591923,
+    "tokens_without_eos": 436520,
+    "eos_tokens": 2000,
+    "total_tokens": 438520,
+    "characters_per_token": 3.6469,
+    "dtype": "uint16",
+    "minimum_token_id": 0,
+    "maximum_token_id": 2048,
+    "output_file": "data\\tokenized_v2\\validation.npy"
+  }
+}

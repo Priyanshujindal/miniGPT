@@ -1,0 +1,12 @@
+{
+    "version": "v3",
+    "algorithm": "Byte-level BPE",
+    "vocab_size": 2048,
+    "min_frequency": 2,
+    "training_source": "data\\cleaned\\train.jsonl",
+    "training_scope": "complete cleaned training corpus",
+    "eos_token_id": 2048,
+    "model_vocab_size": 2049,
+    "round_trip_tests": 7,
+    "round_trip_passed": true
+}
