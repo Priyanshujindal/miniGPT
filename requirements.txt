@@ -6,3 +6,6 @@ matplotlib
 tqdm
 tensorboard
 tokenizers>=0.21.0,<1.0
+fastapi==0.162.7
+uvicorn
+httpx
