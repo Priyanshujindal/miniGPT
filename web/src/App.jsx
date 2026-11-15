@@ -33,6 +33,13 @@ export default function App() {
     setIsCheckingBackend(false);
   };
 
+  // Ensure default model_version is explicitly v4 if upgraded from older localStorage
+  useEffect(() => {
+    if (!settings?.model_version) {
+      setSettings((prev) => ({ ...DEFAULT_SETTINGS, ...prev, model_version: 'v4' }));
+    }
+  }, [settings]);
+
   useEffect(() => {
     checkBackend();
     const interval = setInterval(checkBackend, 30000);
@@ -132,6 +139,7 @@ export default function App() {
     // Call backend API
     const result = await generateCompletion({
       message: promptToSend,
+      model_version: settings.model_version || 'v4',
       max_new_tokens: settings.max_new_tokens,
       temperature: settings.temperature,
       top_k: settings.top_k,
@@ -186,6 +194,7 @@ export default function App() {
 
     const result = await generateCompletion({
       message: lastUserMessage.content,
+      model_version: settings.model_version || 'v4',
       max_new_tokens: settings.max_new_tokens,
       temperature: settings.temperature,
       top_k: settings.top_k,
@@ -254,10 +263,14 @@ export default function App() {
 
             <div className="flex items-center gap-2">
               <span className="font-semibold text-sm text-neutral-200">
-                {currentChat?.title || 'MiniGPT V3'}
+                {currentChat?.title || (settings.model_version === 'v3' ? 'MiniGPT V3' : 'MiniGPT V4')}
               </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-400 border border-neutral-700/50">
-                TinyStories
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${
+                settings.model_version === 'v3'
+                  ? 'bg-neutral-800 text-neutral-400 border-neutral-700/50'
+                  : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+              }`}>
+                {settings.model_version === 'v3' ? 'V3 Storyteller' : 'V4 Assistant'}
               </span>
             </div>
           </div>
@@ -283,7 +296,10 @@ export default function App() {
         {/* Chat / Messages scrollable container */}
         <main className="flex-1 overflow-y-auto flex flex-col">
           {messages.length === 0 ? (
-            <WelcomeScreen onSelectPrompt={(prompt) => handleSendMessage(prompt)} />
+            <WelcomeScreen
+              modelVersion={settings.model_version || 'v4'}
+              onSelectPrompt={(prompt) => handleSendMessage(prompt)}
+            />
           ) : (
             <div className="flex-1 divide-y divide-neutral-800/40 pb-6">
               {messages.map((msg, index) => {

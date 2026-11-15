@@ -4,6 +4,10 @@ from typing import Optional
 
 class ChatRequest(BaseModel):
     message: str = Field(..., description="Prompt text to continue from")
+    model_version: Optional[str] = Field(
+        default="v4",
+        description="Target model version: 'v4' (Conversational Assistant) or 'v3' (Story Generator)",
+    )
     max_new_tokens: int = Field(
         default=100,
         ge=1,

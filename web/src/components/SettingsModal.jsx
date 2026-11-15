@@ -2,8 +2,9 @@ import React from 'react';
 import { X, RotateCcw, Sliders, Cpu, Info } from 'lucide-react';
 
 export const DEFAULT_SETTINGS = {
-  temperature: 0.8,
-  max_new_tokens: 100,
+  model_version: 'v4',
+  temperature: 0.7,
+  max_new_tokens: 80,
   top_k: 40,
   repetition_penalty: 1.15,
 };
@@ -45,15 +46,50 @@ export default function SettingsModal({ isOpen, onClose, settings, onSave, onRes
 
         {/* Sliders body */}
         <div className="p-5 space-y-5 overflow-y-auto max-h-[75vh]">
-          {/* Active Model Indicator */}
-          <div className="p-3 rounded-xl bg-neutral-900/80 border border-neutral-800/80 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2 text-neutral-300">
-              <Cpu className="w-4 h-4 text-emerald-400" />
-              <span>Target Model</span>
+          {/* Model Selector */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 text-neutral-300 font-medium">
+                <Cpu className="w-4 h-4 text-emerald-400" />
+                <span>Target Model Architecture</span>
+              </div>
+              <span className="text-[11px] text-neutral-400 font-mono">
+                {settings.model_version === 'v4' ? '2053 Vocab' : '2049 Vocab'}
+              </span>
             </div>
-            <span className="font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-              MiniGPT V3
-            </span>
+
+            <div className="grid grid-cols-2 gap-2 p-1 bg-neutral-900/90 border border-neutral-800 rounded-xl">
+              <button
+                type="button"
+                onClick={() => handleChange('model_version', 'v4')}
+                className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                  settings.model_version === 'v4' || !settings.model_version
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm'
+                    : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
+                }`}
+              >
+                <span className="font-semibold">MiniGPT V4</span>
+                <span className="text-[10px] text-neutral-400">Conversational Q&A</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleChange('model_version', 'v3')}
+                className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg text-xs font-medium transition-all ${
+                  settings.model_version === 'v3'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-sm'
+                    : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
+                }`}
+              >
+                <span className="font-semibold">MiniGPT V3</span>
+                <span className="text-[10px] text-neutral-400">TinyStories Storyteller</span>
+              </button>
+            </div>
+            <p className="text-[11px] text-neutral-400">
+              {settings.model_version === 'v4' || !settings.model_version
+                ? 'MiniGPT V4 is instruction-tuned with dedicated conversational tokens to answer questions and follow prompts.'
+                : 'MiniGPT V3 generates continuous creative children stories from prompts.'}
+            </p>
           </div>
 
           {/* Temperature */}

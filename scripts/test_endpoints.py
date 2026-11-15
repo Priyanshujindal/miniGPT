@@ -1,5 +1,11 @@
 import json
 import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from fastapi.testclient import TestClient
 from api.main import app
 from api.model_service import model_service
@@ -91,6 +97,23 @@ def main():
         print("Status code:", bad_res4.status_code, flush=True)
         assert bad_res4.status_code == 422, f"Expected 422, got {bad_res4.status_code}"
         print(">>> Repetition penalty validation PASSED!\n", flush=True)
+
+        # 8. Testing MiniGPT V4 Chat Completion
+        print("[8] Testing POST /api/chat with model_version='v4' (Conversational Assistant)...", flush=True)
+        v4_req = {
+            "message": "Hello, how are you today?",
+            "model_version": "v4",
+            "max_new_tokens": 30,
+            "temperature": 0.5,
+        }
+        res_v4 = client.post("/api/chat", json=v4_req)
+        print("Status code:", res_v4.status_code, flush=True)
+        data_v4 = res_v4.json()
+        print("Response:", json.dumps(data_v4, indent=2), flush=True)
+        assert res_v4.status_code == 200
+        assert data_v4["model"] == "MiniGPT V4 (Transfer)"
+        assert len(data_v4["response"].strip()) > 0
+        print(">>> MiniGPT V4 generation PASSED!\n", flush=True)
 
     print("=" * 65, flush=True)
     print("ALL 7 ENDPOINT AND VALIDATION TESTS PASSED!", flush=True)

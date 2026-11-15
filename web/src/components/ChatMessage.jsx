@@ -47,7 +47,7 @@ export default function ChatMessage({
           {/* Header */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-neutral-200">
-              {isAssistant ? 'MiniGPT V3' : 'You'}
+              {isAssistant ? (message.model || 'MiniGPT V4') : 'You'}
             </span>
             {isAssistant && (
               <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-800 text-neutral-400 border border-neutral-700/50">

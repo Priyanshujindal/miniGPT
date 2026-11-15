@@ -1,7 +1,34 @@
 import React from 'react';
-import { Sparkles, BookOpen, Compass, Heart, Box, Bot } from 'lucide-react';
+import { Sparkles, BookOpen, Compass, Heart, Box, Bot, HelpCircle, Code, Calculator, MessageSquare } from 'lucide-react';
 
-const SUGGESTIONS = [
+const SUGGESTIONS_V4 = [
+  {
+    icon: HelpCircle,
+    title: 'General Knowledge',
+    prompt: 'What is Python and why is it popular?',
+    description: 'Ask questions about programming and concepts',
+  },
+  {
+    icon: MessageSquare,
+    title: 'Everyday Conversation',
+    prompt: 'I am feeling happy today.',
+    description: 'Conversational assistant responses',
+  },
+  {
+    icon: Calculator,
+    title: 'Basic Mathematics',
+    prompt: 'Calculate 25 minus 3.',
+    description: 'Simple arithmetic calculation prompt',
+  },
+  {
+    icon: Code,
+    title: 'Programming Concepts',
+    prompt: 'What is the difference between = and == in Python?',
+    description: 'Technical syntax explanation',
+  },
+];
+
+const SUGGESTIONS_V3 = [
   {
     icon: BookOpen,
     title: 'A Little Boy',
@@ -28,7 +55,10 @@ const SUGGESTIONS = [
   },
 ];
 
-export default function WelcomeScreen({ onSelectPrompt }) {
+export default function WelcomeScreen({ onSelectPrompt, modelVersion = 'v4' }) {
+  const isV4 = modelVersion === 'v4';
+  const suggestions = isV4 ? SUGGESTIONS_V4 : SUGGESTIONS_V3;
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-2xl mx-auto my-auto select-none">
       {/* Icon Badge */}
@@ -39,23 +69,25 @@ export default function WelcomeScreen({ onSelectPrompt }) {
         <div className="absolute -top-1 -right-1 flex h-4 w-4">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-40"></span>
           <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 text-[9px] font-bold text-black items-center justify-center">
-            3
+            {isV4 ? '4' : '3'}
           </span>
         </div>
       </div>
 
       {/* Main Title */}
       <h1 className="text-2xl font-bold tracking-tight text-neutral-100 sm:text-3xl mb-2">
-        MiniGPT <span className="text-emerald-400 font-mono">V3</span>
+        MiniGPT <span className="text-emerald-400 font-mono">{isV4 ? 'V4' : 'V3'}</span>
       </h1>
 
       <p className="text-sm text-neutral-400 max-w-md leading-relaxed mb-8">
-        Custom 4-layer autoregressive GPT transformer trained from scratch on TinyStories. Enter a prompt or choose a starter below to generate.
+        {isV4
+          ? 'Instruction-tuned 3.72M parameter conversational language model. Ask a question or choose an example below.'
+          : 'Custom 4-layer autoregressive GPT transformer trained on TinyStories. Enter a prompt to generate stories.'}
       </p>
 
       {/* Suggested Prompts Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left">
-        {SUGGESTIONS.map((item, idx) => {
+        {suggestions.map((item, idx) => {
           const Icon = item.icon;
           return (
             <button
@@ -87,9 +119,10 @@ export default function WelcomeScreen({ onSelectPrompt }) {
         <span>•</span>
         <span className="px-2 py-0.5 rounded-md bg-neutral-900 border border-neutral-800">128 Context Window</span>
         <span>•</span>
-        <span className="px-2 py-0.5 rounded-md bg-neutral-900 border border-neutral-800">2049 Vocab</span>
+        <span className="px-2 py-0.5 rounded-md bg-neutral-900 border border-neutral-800">
+          {isV4 ? '2053 Vocab (Conversational)' : '2049 Vocab (BPE)'}
+        </span>
       </div>
     </div>
   );
 }
-

@@ -44,14 +44,16 @@ export async function getHealthStatus() {
  */
 export async function generateCompletion({
   message,
-  max_new_tokens = 100,
-  temperature = 0.8,
+  model_version = 'v4',
+  max_new_tokens = 80,
+  temperature = 0.7,
   top_k = 40,
   repetition_penalty = 1.15,
 }) {
   try {
     const payload = {
       message: message.trim(),
+      model_version: model_version,
       max_new_tokens: Number(max_new_tokens),
       temperature: Number(temperature),
       top_k: top_k !== null && top_k !== undefined ? Number(top_k) : null,

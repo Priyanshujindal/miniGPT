@@ -1,0 +1,15 @@
+{
+    "version": "v4",
+    "base_version": "v3",
+    "base_vocab_size": 2048,
+    "vocab_size": 2053,
+    "special_tokens": {
+        "<|end|>": 2048,
+        "<|system|>": 2049,
+        "<|user|>": 2050,
+        "<|assistant|>": 2051,
+        "<|endofturn|>": 2052
+    },
+    "round_trip_tests_passed": true,
+    "v3_invariance_verified": true
+}
